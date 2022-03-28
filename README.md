@@ -1,2 +1,2 @@
 # Discard-Python-Local-Chat
-Prodam garage
+This project is dedicated to creating new and independant Russian messanger Discard!!!
