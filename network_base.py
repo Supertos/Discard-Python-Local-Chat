@@ -21,10 +21,10 @@ class network_interface:
     def broadcast( self, data ):
         for user in self.users:
             self.socket.sendmsg(data, [(socket.SOL_SOCKET, socket.SCM_RIGHTS, user)])
-            
+
     def connect( self, adr, port )
         self.socket.connect( (adr, port ) )
-        self.socket.sendmsg( GLOBAL_MSG_ENCODER.encode(1) )  #Just user data with opcode 1
+        self.socket.sendmsg( GLOBAL_ENCODER.encode(1) )  #Just user data with opcode 1
 
 """------------------------------------------
     Encoded message structure
