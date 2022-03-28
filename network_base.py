@@ -18,6 +18,13 @@ class network_interface:
     """===Operation code: 1==="""
     def onUserConnection(self, msgdata):
         self.users[ msgdata[1]+":"+msgdata[2] ] = [ msgdata[3], msgdata[1], msgdata[2] ]
+    def broadcast( self, data ):
+        for user in self.users:
+            self.socket.sendmsg(data, [(socket.SOL_SOCKET, socket.SCM_RIGHTS, user)])
+            
+    def connect( self, adr, port )
+        self.socket.connect( (adr, port ) )
+        self.socket.sendmsg( GLOBAL_MSG_ENCODER.encode(1) )  #Just user data with opcode 1
 
 """------------------------------------------
     Encoded message structure
