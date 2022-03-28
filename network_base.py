@@ -9,7 +9,7 @@
 import socket
 class network_interface:
     users = []
-    def createConenction( self, adr, port, name ):
+    def createConnection( self, adr, port, name ):
         self.socket     = socket.socket()
         self.Address    = adr
         self.Port       = port
@@ -53,8 +53,4 @@ class msg_encoder:
 enc = msg_encoder()
 network = network_interface()
 
-network.createConenction( socket.gethostbyname(socket.gethostname()), 9090, "Nya" )
-
-enc.bind_interface( network )
-data = enc.decode( enc.encode(1, "Cake is a lie!") )
-print( data[0],data[1],data[2],data[3],data[4] )
+network.createConnection( socket.gethostbyname(socket.gethostname()), 9090, "Nya" )
