@@ -30,12 +30,12 @@ class network_interface:
     Encoded message structure
     -----------------------------------------
     Each symbol: 16 bytes
-    Bits    | Data
-    0-255   | Address
-    256-319 | Port
-    320-575 | Username
-    576-591 | Operation code
-    591-... | Data
+    Bits    | Symbols | Data
+    0-255   | 0-15    | Address
+    256-319 | 16-20   | Port
+    320-575 | 20-35   | Username
+    576-591 | 36      | Operation code
+    591-... | 36-...  | Data
 ------------------------------------------"""
 
 class msg_encoder:
