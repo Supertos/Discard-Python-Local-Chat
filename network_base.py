@@ -56,7 +56,3 @@ class msg_encoder:
         Data = msg[37:len(msg)].replace(chr(0), "")
         return [ Adr, Port, Name, Code, Data ]
 
-enc = msg_encoder()
-network = network_interface()
-
-network.createConnection( socket.gethostbyname(socket.gethostname()), 9090, "Nya" )
