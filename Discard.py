@@ -21,7 +21,7 @@ GLOBAL_HOST = False
 GLOBAL_VER = "0.1"
 GLOBAL_SLOGANS = [
     "Now with letters!",
-    "Free except electriciy bills",
+    "Free except electricity bills",
     "Made in Russia",
     "Nya",
     "Please delete this",
