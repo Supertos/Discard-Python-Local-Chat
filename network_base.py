@@ -15,10 +15,9 @@ class network_interface:
         self.Port       = port
         self.Name       = name
         self.socket.bind( (adr, port ) )
-
-    def onOnUserConnection(self, msgdata):
+    """===Operation code: 1==="""
+    def onUserConnection(self, msgdata):
         self.users[ msgdata[1]+":"+msgdata[2] ] = [ msgdata[3], msgdata[1], msgdata[2] ]
-        pass
 
 """------------------------------------------
     Encoded message structure
