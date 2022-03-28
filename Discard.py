@@ -11,6 +11,7 @@ import network_base
 import random
 import os
 import socket
+import _thread
 GLOBAL_ENCODER = network_base.msg_encoder()
 GLOBAL_NETWORK = network_base.network_interface()
 
@@ -41,6 +42,8 @@ def cmd_help():
 
 def discard_tick():
     if GLOBAL_HOST:
+        pass
+    else:
         pass
 
 cmd_help()
