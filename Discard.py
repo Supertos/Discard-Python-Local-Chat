@@ -12,14 +12,20 @@ import random
 import os
 import socket
 import _thread
+global GLOBAL_ENCODER
+global GLOBAL_NETWORK
 GLOBAL_ENCODER = network_base.msg_encoder()
+
 GLOBAL_NETWORK = network_base.network_interface()
 
 GLOBAL_ENCODER.bind_interface( GLOBAL_NETWORK )
 
-GLOBAL_HOST = False
+global GLOBAL_HOST
+global GLOBAL_CHAT
+global GLOBAL_VER
+GLOBAL_VER = "0.2"
 GLOBAL_CHAT = False
-GLOBAL_VER = "0.1"
+GLOBAL_HOST = False
 
 GLOBAL_MSG = ""
 
@@ -45,11 +51,12 @@ def cmd_help():
     print("")
 
 def input_tick():
+    global GLOBAL_MSG
     while True:
         GLOBAL_MSG = input("< "+GLOBAL_NETWORK.Name+" >:")
 
 def discard_tick():
-
+    global GLOBAL_MSG
     while True:
         if not GLOBAL_CHAT: return
 
@@ -62,8 +69,8 @@ def discard_tick():
                 GLOBAL_NETWORK.sendToServer( GLOBAL_ENCODER.encode(0, "< "+GLOBAL_NETWORK.Name+" >: "+GLOBAL_MSG) )
             GLOBAL_MSG = ""
         if GLOBAL_HOST:
-            GLOBAL_NETWORK.listen(1)
-            New_User = GLOBAL_NETWORK.accept()
+            GLOBAL_NETWORK.socket.listen(1)
+            New_User = GLOBAL_NETWORK.socket.accept()
             if New_User:
                 print(New_User[1], "connected to server!")
         for user in GLOBAL_NETWORK.users:
