@@ -16,12 +16,27 @@ class network_interface:
         self.Name       = name
         self.socket.bind( (adr, port ) )
     """===Operation code: 1==="""
-    def onUserConnection(self, msgdata):
-        self.users[ msgdata[1]+":"+msgdata[2] ] = [ msgdata[3], msgdata[1], msgdata[2] ]
+    def onUserDesignation(self, msgData):
+        self.users[ Address ].append( msgData[0] )
+        self.users[ Address ].append( msgData[1] )
+        self.users[ Address ].append( msgData[2] )
+
+    """===Operation code: 0==="""
+    def onMessage(self, msg):
+        if GLOBAL_HOST:
+            print( "<",msg[2],">: ", msg[4] )
+        else:
+            print( msg[4] )
+    def onUserConnection(self, SocketObj, Address):
+        self.users[ Address ] = [ SocketObj ]
     def broadcast( self, data ):
         for user in self.users:
-            self.socket.sendmsg(data, [(socket.SOL_SOCKET, socket.SCM_RIGHTS, user)])
+            user[0].sendmsg(data)
 
+    def send(self, user, data):
+        user.sendmsg( data )
+    def sendToServer(self, data):
+        self.socket.sendmsg(data)
     def connect( self, adr, port ):
         self.socket.connect( (adr, port ) )
         self.socket.sendmsg( GLOBAL_ENCODER.encode(1) )  #Just user data with opcode 1
@@ -35,7 +50,7 @@ class network_interface:
     256-319 | 16-20   | Port
     320-575 | 20-35   | Username
     576-591 | 36      | Operation code
-    591-... | 36-...  | Data
+    591-... | 37-...  | Data
 ------------------------------------------"""
 
 class msg_encoder:
