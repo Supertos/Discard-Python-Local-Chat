@@ -43,12 +43,13 @@ print("        ", GLOBAL_SLOGANS[ random.randint(0, len(GLOBAL_SLOGANS)-1 ) ] )
 print("VER: ", GLOBAL_VER )
 
 def cmd_help():
+    print("============================")
     print("help - show this text")
     print("connect - start connection")
     print("quit - stop discard'ing")
     print("host - start server")
     print("connect - connect to server")
-    print("")
+    print("============================")
 
 def input_tick():
     global GLOBAL_MSG
@@ -99,7 +100,10 @@ while True:
         GLOBAL_NETWORK.Name = input("Enter your name:")
         adr = input("Enter desired address:")
         port = input("Enter desired port:")
-        GLOBAL_NETWORK.connect(adr, port)
-        GLOBAL_CHAT = True
+        if not GLOBAL_NETWORK.connect(adr, int(port)):
+            print("Connected!")
+            GLOBAL_CHAT = True
+            _thread.start_new_thread(discard_tick, ())
+            _thread.start_new_thread(input_tick, ())
 while True:
     pass
