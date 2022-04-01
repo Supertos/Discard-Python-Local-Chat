@@ -18,10 +18,14 @@ GLOBAL_NETWORK = network_base.network_interface()
 GLOBAL_ENCODER.bind_interface( GLOBAL_NETWORK )
 
 GLOBAL_HOST = False
+GLOBAL_CHAT = False
 GLOBAL_VER = "0.1"
+
+GLOBAL_MSG = ""
+
 GLOBAL_SLOGANS = [
     "Now with letters!",
-    "Free except electricity bills",
+    "Free except electriciy bills",
     "Made in Russia",
     "Nya",
     "Please delete this",
@@ -37,15 +41,37 @@ def cmd_help():
     print("connect - start connection")
     print("quit - stop discard'ing")
     print("host - start server")
+    print("connect - connect to server")
     print("")
-    print("")
+
+def input_tick():
+    while True:
+        GLOBAL_MSG = input("< "+GLOBAL_NETWORK.Name+" >:")
 
 def discard_tick():
-    if GLOBAL_HOST:
-        pass
-    else:
-        pass
 
+    while True:
+        if not GLOBAL_CHAT: return
+
+        if GLOBAL_MSG != "":
+            print("<", GLOBAL_NETWORK.Name, ">:", GLOBAL_MSG)
+            if GLOBAL_HOST:
+                print("<", GLOBAL_NETWORK.Name ,">:", GLOBAL_MSG)
+                GLOBAL_NETWORK.broadcast( GLOBAL_ENCODER.encode(0, "< "+GLOBAL_NETWORK.Name+" >: "+GLOBAL_MSG) )
+            else:
+                GLOBAL_NETWORK.sendToServer( GLOBAL_ENCODER.encode(0, "< "+GLOBAL_NETWORK.Name+" >: "+GLOBAL_MSG) )
+            GLOBAL_MSG = ""
+        if GLOBAL_HOST:
+            GLOBAL_NETWORK.listen(1)
+            New_User = GLOBAL_NETWORK.accept()
+            if New_User:
+                print(New_User[1], "connected to server!")
+        for user in GLOBAL_NETWORK.users:
+            data = user.recvmsg(2048)
+            if data[3] == 1:
+                GLOBAL_NETWORK.onUserDesignation( data )
+            elif data[3] == 0:
+                GLOBAL_NETWORK.onMessage( data )
 cmd_help()
 GLOBAL_NETWORK.createConnection( socket.gethostbyname(socket.gethostname()), random.randint(1000, 9999), "Nya" )
 print("Socket created at ", GLOBAL_NETWORK.Address, ":", GLOBAL_NETWORK.Port)
@@ -56,4 +82,17 @@ while True:
     elif cmd == "quit":
         quit(0)
     elif cmd == "host":
-        pass
+        GLOBAL_CHAT = True
+        GLOBAL_HOST = True
+        _thread.start_new_thread( discard_tick, () )
+        _thread.start_new_thread( input_tick, () )
+        break
+    elif cmd == "connect":
+        print("===Welcome to connection establish wizard!===")
+        GLOBAL_NETWORK.Name = input("Enter your name:")
+        adr = input("Enter desired address:")
+        port = input("Enter desired port:")
+        GLOBAL_NETWORK.connect(adr, port)
+        GLOBAL_CHAT = True
+while True:
+    pass
