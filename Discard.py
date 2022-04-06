@@ -90,6 +90,7 @@ def discard_tick():
                 elif data[3] == 0:
                     GLOBAL_NETWORK.onMessage( data )
             except BaseException:
+                pass
 cmd_help()
 GLOBAL_NETWORK.createConnection( socket.gethostbyname(socket.gethostname()), random.randint(1000, 9999), "Nya" )
 print("Socket created at ", GLOBAL_NETWORK.Address, ":", GLOBAL_NETWORK.Port)
