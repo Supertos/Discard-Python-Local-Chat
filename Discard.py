@@ -35,7 +35,8 @@ GLOBAL_SLOGANS = [
     "Made in Russia",
     "Nya",
     "Please delete this",
-    "Vanya, we need to implement connection"
+    "Vanya, we need to implement connection",
+    "Vanya, you're fired!"
 ]
 
 print("===DISCARD===")
@@ -58,10 +59,12 @@ def input_tick():
 
 def discard_tick():
     global GLOBAL_MSG
+    global GLOBAL_CHAT
     while True:
         if not GLOBAL_CHAT: return
-
-        if GLOBAL_MSG != "":
+        
+        """===Messaging==="""
+        if GLOBAL_MSG:
             print("<", GLOBAL_NETWORK.Name, ">:", GLOBAL_MSG)
             if GLOBAL_HOST:
                 print("<", GLOBAL_NETWORK.Name ,">:", GLOBAL_MSG)
@@ -69,17 +72,24 @@ def discard_tick():
             else:
                 GLOBAL_NETWORK.sendToServer( GLOBAL_ENCODER.encode(0, "< "+GLOBAL_NETWORK.Name+" >: "+GLOBAL_MSG) )
             GLOBAL_MSG = ""
+           """===Listening==="""
         if GLOBAL_HOST:
+            
             GLOBAL_NETWORK.socket.listen(1)
-            New_User = GLOBAL_NETWORK.socket.accept()
-            if New_User:
+            try:
+                New_User = GLOBAL_NETWORK.socket.accept()
                 print(New_User[1], "connected to server!")
+            except BaseException:
+                pass
+            
         for user in GLOBAL_NETWORK.users:
-            data = user.recvmsg(2048)
-            if data[3] == 1:
-                GLOBAL_NETWORK.onUserDesignation( data )
-            elif data[3] == 0:
-                GLOBAL_NETWORK.onMessage( data )
+            try:
+                data = user.recv(2048)
+                if data[3] == 1:
+                    GLOBAL_NETWORK.onUserDesignation( data )
+                elif data[3] == 0:
+                    GLOBAL_NETWORK.onMessage( data )
+            except BaseException:
 cmd_help()
 GLOBAL_NETWORK.createConnection( socket.gethostbyname(socket.gethostname()), random.randint(1000, 9999), "Nya" )
 print("Socket created at ", GLOBAL_NETWORK.Address, ":", GLOBAL_NETWORK.Port)
