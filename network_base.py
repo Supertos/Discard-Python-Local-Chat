@@ -11,6 +11,7 @@ class network_interface:
     users = []
     def createConnection( self, adr, port, name ):
         self.socket     = socket.socket()
+        self.socket.settimeout( 0.01 )
         self.Address    = adr
         self.Port       = port
         self.Name       = name
@@ -36,7 +37,7 @@ class network_interface:
     def send(self, user, data):
         user.sendmsg( data )
     def sendToServer(self, data):
-        self.socket.sendmsg(data)
+        self.socket.sendall(data)
     def connect( self, adr, port ):
         self.socket.connect( (adr, port ) )
         self.socket.sendmsg( GLOBAL_ENCODER.encode(1) )  #Just user data with opcode 1
