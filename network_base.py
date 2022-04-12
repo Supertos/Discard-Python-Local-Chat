@@ -64,6 +64,7 @@ class NetInter:
             except (socket.error, TimeoutError):
                 pass
         return msgs
+
     def serverTick(self):
         while True:
             self.socket.listen(1)
@@ -102,6 +103,7 @@ class NetInter:
                     pass
                 elif msg[0] == "04":  # Disconnect
                     pass
+                
     def inputTick(self):
         while True:
             message = input("<"+self.name+">")
