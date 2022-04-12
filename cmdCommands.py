@@ -2,7 +2,7 @@ import socket
 import network_base
 import _thread
 import random
-
+import time
 IPV6 = False
 def cmd_help():
     print("============================")
@@ -64,11 +64,15 @@ def cmd_connect():
         NET_INTERFACE.makeSocket( socket.gethostbyname(socket.gethostname()), random.randint(1000, 9999) )
     NET_INTERFACE.name = input("*Enter desired name: ")
     adr = input("*Enter desired address: ")
-    NET_INTERFACE.connect( adr.split(":")[0], int(adr.split(":")[1]))
+    if IPV6:
+        print(adr[0:(len(adr)-5)],adr[(len(adr)-4):len(adr)])
+        NET_INTERFACE.connect(adr[0:(len(adr)-5)], int( adr[(len(adr)-4):len(adr)] ) )
+    else:
+        NET_INTERFACE.connect(adr.split(":")[0], int(adr.split(":")[1]))
     _thread.start_new_thread( NET_INTERFACE.clientTick, () )
     _thread.start_new_thread( NET_INTERFACE.inputTick, () )
     while True:
-        pass
+        time.sleep(0.1)
 commands = {
     'help' : cmd_help,
     'quit' : cmd_quit,
