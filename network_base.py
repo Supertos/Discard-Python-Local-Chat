@@ -8,6 +8,7 @@
 
 import socket
 import random
+import config
 socket.setdefaulttimeout(0.1)
 
 """----------------------------------------------
