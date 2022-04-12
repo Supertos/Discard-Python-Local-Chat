@@ -7,7 +7,6 @@
 --------------------------------------------------"""
 
 import socket
-global GLOBAL_ENCODER
 socket.setdefaulttimeout(0.1)
 class network_interface:
     users = []
@@ -20,9 +19,10 @@ class network_interface:
         self.socket.bind( (adr, port ) )
     """===Operation code: 1==="""
     def onUserDesignation(self, msgData):
-        self.users[ msgData[0]+":"+msgData[1] ].append( msgData[0] )
-        self.users[ msgData[0]+":"+msgData[1] ].append( msgData[1] )
-        self.users[ msgData[0]+":"+msgData[1] ].append( msgData[2] )
+        pass
+        #self.users[ msgData[0]+":"+msgData[1] ].append( msgData[0] )
+        #self.users[ msgData[0]+":"+msgData[1] ].append( msgData[1] )
+        #self.users[ msgData[0]+":"+msgData[1] ].append( msgData[2] )
 
     """===Operation code: 0==="""
     def onMessage(self, msg):
@@ -35,7 +35,7 @@ class network_interface:
         self.users[ Address ] = [ SocketObj ]
     def broadcast( self, data ):
         for user in self.users:
-            user[0].send(data)
+            user.send(bytes(data, "utf-8"))
 
     def send(self, user, data):
         user.sendall( data )

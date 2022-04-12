@@ -75,17 +75,30 @@ def discard_tick():
             try:
                 New_User = GLOBAL_NETWORK.socket.accept()
                 print(New_User[1], "connected to server!")
+                GLOBAL_NETWORK.users.append(New_User[0])
             except socket.error:
                 pass
-        for user in GLOBAL_NETWORK.users:
+            except ( socket.error, TimeoutError):
+                pass
+            for user in GLOBAL_NETWORK.users:
+                try:
+                    ld = user.recv(8192).decode("utf-8")
+                    data = GLOBAL_ENCODER.decode( ld )
+                    if data[3] == 1:
+                        GLOBAL_NETWORK.onUserDesignation( data )
+                    elif data[3] == 0:
+                        GLOBAL_NETWORK.onMessage( data )
+                except ( socket.error, TimeoutError):
+                    pass
+        else:
             try:
-                ld = user.recv(8192).decode("utf-8")
-                data = GLOBAL_ENCODER.decode( ld )
+                ld = GLOBAL_NETWORK.socket.recv(8192).decode("utf-8")
+                data = GLOBAL_ENCODER.decode(ld)
                 if data[3] == 1:
-                    GLOBAL_NETWORK.onUserDesignation( data )
+                    GLOBAL_NETWORK.onUserDesignation(data)
                 elif data[3] == 0:
-                    GLOBAL_NETWORK.onMessage( data )
-            except socket.error:
+                    GLOBAL_NETWORK.onMessage(data)
+            except (socket.error, TimeoutError):
                 pass
 cmd_help()
 GLOBAL_NETWORK.createConnection( socket.gethostbyname(socket.gethostname()), random.randint(1000, 9999), "Nya" )
