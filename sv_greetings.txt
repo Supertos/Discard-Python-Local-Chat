@@ -1,0 +1,4 @@
+{username} has joined the party!
+Say hi to {username}!
+Howdy {username} how it's going?
+{username} is now server's member!

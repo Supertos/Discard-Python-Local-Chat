@@ -32,7 +32,7 @@ class NetInter:
             user.sendall( bytes( msg, self.coding ))
 
     def updateGreetings(self):
-        with open("sv_greetings.text") as file:
+        with open("sv_greetings.txt") as file:
             self.greetings = file.read().split("\n")
             file.close()
 
@@ -103,7 +103,7 @@ class NetInter:
                     pass
                 elif msg[0] == "04":  # Disconnect
                     pass
-                
+
     def inputTick(self):
         while True:
             message = input("<"+self.name+">")
