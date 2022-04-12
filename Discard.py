@@ -9,14 +9,13 @@
 
 import network_base
 import random
-#import os
 import socket
 import _thread
+
 GLOBAL_ENCODER = network_base.msg_encoder()
-
 GLOBAL_NETWORK = network_base.network_interface()
-
 GLOBAL_ENCODER.bind_interface( GLOBAL_NETWORK )
+GLOBAL_NETWORK.linkEncoder( GLOBAL_ENCODER )
 
 GLOBAL_VER = "0.2"
 GLOBAL_CHAT = False
@@ -55,6 +54,8 @@ def input_tick():
 def discard_tick():
     global GLOBAL_MSG
     global GLOBAL_CHAT
+    global GLOBAL_NETWORK
+    global GLOBAL_ENCODER
     while True:
         if not GLOBAL_CHAT: return
         
@@ -67,7 +68,7 @@ def discard_tick():
             else:
                 GLOBAL_NETWORK.sendToServer( GLOBAL_ENCODER.encode(0, "< "+GLOBAL_NETWORK.Name+" >: "+GLOBAL_MSG) )
             GLOBAL_MSG = ""
-           #"""===Listening==="""
+        """===Listening==="""
         if GLOBAL_HOST:
             
             GLOBAL_NETWORK.socket.listen(1)
@@ -76,10 +77,10 @@ def discard_tick():
                 print(New_User[1], "connected to server!")
             except socket.error:
                 pass
-            
         for user in GLOBAL_NETWORK.users:
             try:
-                data = user.recv(2048)
+                ld = user.recv(8192).decode("utf-8")
+                data = GLOBAL_ENCODER.decode( ld )
                 if data[3] == 1:
                     GLOBAL_NETWORK.onUserDesignation( data )
                 elif data[3] == 0:
