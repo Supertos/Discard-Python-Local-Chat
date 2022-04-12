@@ -58,7 +58,10 @@ def cmd_connect():
     print("============================")
     print("Welcome to server setup wizard!")
     NET_INTERFACE.ipv6 = IPV6
-    NET_INTERFACE.makeSocket( socket.gethostbyname(socket.gethostname()), random.randint(1000, 9999) )
+    if IPV6:
+        NET_INTERFACE.makeSocket(socket.getaddrinfo(socket.gethostname(), 8080, socket.AF_INET6)[0][4][0], 8080)
+    else:
+        NET_INTERFACE.makeSocket( socket.gethostbyname(socket.gethostname()), random.randint(1000, 9999) )
     NET_INTERFACE.name = input("*Enter desired name: ")
     adr = input("*Enter desired address: ")
     NET_INTERFACE.connect( adr.split(":")[0], int(adr.split(":")[1]))
