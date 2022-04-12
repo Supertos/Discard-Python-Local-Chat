@@ -119,7 +119,7 @@ class NetInter:
             except (TimeoutError, socket.timeout):
                 pass
 
-    def inputTick(self):
+    def inputTick(self): 
         while True:
             message = input()
             if message:
