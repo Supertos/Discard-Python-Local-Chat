@@ -7,23 +7,26 @@
 --------------------------------------------------"""
 
 import socket
+global GLOBAL_ENCODER
+socket.setdefaulttimeout(0.1)
 class network_interface:
     users = []
     def createConnection( self, adr, port, name ):
         self.socket     = socket.socket()
-        self.socket.settimeout( 0.01 )
+        self.socket.settimeout( 0.1 )
         self.Address    = adr
         self.Port       = port
         self.Name       = name
         self.socket.bind( (adr, port ) )
     """===Operation code: 1==="""
     def onUserDesignation(self, msgData):
-        self.users[ Address ].append( msgData[0] )
-        self.users[ Address ].append( msgData[1] )
-        self.users[ Address ].append( msgData[2] )
+        self.users[ msgData[0]+":"+msgData[1] ].append( msgData[0] )
+        self.users[ msgData[0]+":"+msgData[1] ].append( msgData[1] )
+        self.users[ msgData[0]+":"+msgData[1] ].append( msgData[2] )
 
     """===Operation code: 0==="""
     def onMessage(self, msg):
+        global GLOBAL_HOST
         if GLOBAL_HOST:
             print( "<",msg[2],">: ", msg[4] )
         else:
@@ -32,15 +35,17 @@ class network_interface:
         self.users[ Address ] = [ SocketObj ]
     def broadcast( self, data ):
         for user in self.users:
-            user[0].sendmsg(data)
+            user[0].send(data)
 
     def send(self, user, data):
-        user.sendmsg( data )
+        user.sendall( data )
     def sendToServer(self, data):
-        self.socket.sendall(data)
+        self.socket.sendall( bytes(self.encoder.encode(0, data), "utf-8") )  #Just user data with opcode 1
+    def linkEncoder(self, encoder):
+        self.encoder = encoder
     def connect( self, adr, port ):
         self.socket.connect( (adr, port ) )
-        self.socket.sendmsg( GLOBAL_ENCODER.encode(1) )  #Just user data with opcode 1
+        self.socket.sendall( bytes(self.encoder.encode(1, ""), "utf-8") )  #Just user data with opcode 1
 
 """------------------------------------------
     Encoded message structure
