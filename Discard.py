@@ -9,20 +9,15 @@
 
 import network_base
 import random
-import os
+#import os
 import socket
 import _thread
-global GLOBAL_ENCODER
-global GLOBAL_NETWORK
 GLOBAL_ENCODER = network_base.msg_encoder()
 
 GLOBAL_NETWORK = network_base.network_interface()
 
 GLOBAL_ENCODER.bind_interface( GLOBAL_NETWORK )
 
-global GLOBAL_HOST
-global GLOBAL_CHAT
-global GLOBAL_VER
 GLOBAL_VER = "0.2"
 GLOBAL_CHAT = False
 GLOBAL_HOST = False
@@ -31,7 +26,7 @@ GLOBAL_MSG = ""
 
 GLOBAL_SLOGANS = [
     "Now with letters!",
-    "Free except electriciy bills",
+    "Free except electricity bills",
     "Made in Russia",
     "Nya",
     "Please delete this",
@@ -72,14 +67,14 @@ def discard_tick():
             else:
                 GLOBAL_NETWORK.sendToServer( GLOBAL_ENCODER.encode(0, "< "+GLOBAL_NETWORK.Name+" >: "+GLOBAL_MSG) )
             GLOBAL_MSG = ""
-           """===Listening==="""
+           #"""===Listening==="""
         if GLOBAL_HOST:
             
             GLOBAL_NETWORK.socket.listen(1)
             try:
                 New_User = GLOBAL_NETWORK.socket.accept()
                 print(New_User[1], "connected to server!")
-            except BaseException:
+            except socket.error:
                 pass
             
         for user in GLOBAL_NETWORK.users:
@@ -89,7 +84,7 @@ def discard_tick():
                     GLOBAL_NETWORK.onUserDesignation( data )
                 elif data[3] == 0:
                     GLOBAL_NETWORK.onMessage( data )
-            except BaseException:
+            except socket.error:
                 pass
 cmd_help()
 GLOBAL_NETWORK.createConnection( socket.gethostbyname(socket.gethostname()), random.randint(1000, 9999), "Nya" )
