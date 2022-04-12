@@ -56,43 +56,43 @@ def discard_tick():
     global GLOBAL_CHAT
     global GLOBAL_NETWORK
     global GLOBAL_ENCODER
+
     while True:
-        if not GLOBAL_CHAT: return
+        if not GLOBAL_CHAT: return #Stop this thread when we finish chatting
         
         """===Messaging==="""
-        if GLOBAL_MSG:
+        if GLOBAL_MSG: #We have a message we want to send
             print("<", GLOBAL_NETWORK.Name, ">:", GLOBAL_MSG)
             if GLOBAL_HOST:
-                print("<", GLOBAL_NETWORK.Name ,">:", GLOBAL_MSG)
                 GLOBAL_NETWORK.broadcast( GLOBAL_ENCODER.encode(0, "< "+GLOBAL_NETWORK.Name+" >: "+GLOBAL_MSG) )
             else:
                 GLOBAL_NETWORK.sendToServer( GLOBAL_ENCODER.encode(0, "< "+GLOBAL_NETWORK.Name+" >: "+GLOBAL_MSG) )
             GLOBAL_MSG = ""
         """===Listening==="""
-        if GLOBAL_HOST:
-            
+        if GLOBAL_HOST: #We're host
             GLOBAL_NETWORK.socket.listen(1)
             try:
                 New_User = GLOBAL_NETWORK.socket.accept()
-                print(New_User[1], "connected to server!")
                 GLOBAL_NETWORK.users.append(New_User[0])
+                print(New_User[1], "connected to server!")
             except socket.error:
                 pass
             except ( socket.error, TimeoutError):
                 pass
-            for user in GLOBAL_NETWORK.users:
+
+            for user in GLOBAL_NETWORK.users:   #Receive messages
                 try:
-                    ld = user.recv(8192).decode("utf-8")
-                    data = GLOBAL_ENCODER.decode( ld )
-                    if data[3] == 1:
+                    ld = user.recv(8192).decode("utf-8")    #We're getting bytes so we need to decode 'em into string
+                    data = GLOBAL_ENCODER.decode( ld )  #Then parse into array
+                    if data[3] == 1:    #Opcodes
                         GLOBAL_NETWORK.onUserDesignation( data )
                     elif data[3] == 0:
                         GLOBAL_NETWORK.onMessage( data )
                 except ( socket.error, TimeoutError):
                     pass
-        else:
+        else:   #We're client
             try:
-                ld = GLOBAL_NETWORK.socket.recv(8192).decode("utf-8")
+                ld = GLOBAL_NETWORK.socket.recv(8192).decode("utf-8")   #Receive data from server only
                 data = GLOBAL_ENCODER.decode(ld)
                 if data[3] == 1:
                     GLOBAL_NETWORK.onUserDesignation(data)
