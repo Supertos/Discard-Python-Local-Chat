@@ -4,10 +4,10 @@ import _thread
 import random
 def cmd_help():
     print("============================")
-    print("/help - show this text")
-    print("/quit - stop discard'ing")
-    print("/host - start server")
-    print("/connect - connect to server")
+    print("help - show this text")
+    print("quit - stop discard'ing")
+    print("host - start server")
+    print("connect - connect to server")
     print("============================")
 
 
