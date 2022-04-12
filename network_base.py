@@ -43,6 +43,7 @@ class NetInter:
     def connect(self, adr, port):
         try:
             self.socket.connect( (adr, port) )
+            self.sendToServer( self.encodeMsg("01", "") )
         except TimeoutError:
             print("Unable to connect! Check if address and port are valid")
         except socket.error:
