@@ -23,11 +23,15 @@ class NetInter:
     message = ""
     hostMode = False
     def makeSocket(self, adr, port):
-        self.socket     = socket.socket()
+
         self.address    = adr
         self.port       = port
-
-        self.socket.bind( (adr, port) )
+        if self.ipv6:
+            self.socket = socket.socket(socket.AF_INET6)
+            self.socket.bind( (adr, port, 0, 0) )
+        else:
+            self.socket = socket.socket()
+            self.socket.bind( (adr, port) )
 
     def broadcast(self, msg):
         for user in self.users:
@@ -44,8 +48,12 @@ class NetInter:
 
     def connect(self, adr, port):
         try:
-            self.socket.connect( (adr, port) )
-            self.sendToServer( self.encodeMsg("01", "") )
+            if not self.ipv6:
+                self.socket.connect( (adr, port) )
+                self.sendToServer( self.encodeMsg("01", "") )
+            else:
+                self.socket.connect( (adr, port, 0, 0) )
+                self.sendToServer( self.encodeMsg("01", "") )
         except (TimeoutError, socket.timeout):
             print("Unable to connect! Check if address and port are valid")
         except socket.error:

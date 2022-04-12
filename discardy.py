@@ -11,16 +11,16 @@ def startup():
 
 
 def main_msg_loop():
-
-    cmd = input("<Discard>: ")
-    isCommand = False
-    for key, command in commands.items():
-        if cmd == key:
-            isCommand = True
-            command()
-    if not isCommand:
-        # write non-command handler here
-        pass
+    while True:
+        cmd = input("<Discard>: ")
+        isCommand = False
+        for key, command in commands.items():
+            if cmd == key:
+                isCommand = True
+                command()
+        if not isCommand:
+            # write non-command handler here
+            pass
 
 
 if __name__ == '__main__':
