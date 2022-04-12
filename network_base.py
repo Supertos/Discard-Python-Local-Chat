@@ -21,6 +21,7 @@ class NetInter:
     coding  = "utf-8"
     name    = "Katya"
     message = ""
+    hostMode = False
     def makeSocket(self, adr, port):
         self.socket     = socket.socket()
         self.address    = adr
@@ -30,7 +31,7 @@ class NetInter:
 
     def broadcast(self, msg):
         for user in self.users:
-            user.sendall( bytes( msg, self.coding ))
+            user[0].sendall( bytes( msg, self.coding ))
 
     def updateGreetings(self):
         with open("sv_greetings.txt") as file:
@@ -45,7 +46,7 @@ class NetInter:
         try:
             self.socket.connect( (adr, port) )
             self.sendToServer( self.encodeMsg("01", "") )
-        except TimeoutError:
+        except (TimeoutError, socket.timeout):
             print("Unable to connect! Check if address and port are valid")
         except socket.error:
             print("Unknown error has occurred!")
@@ -54,16 +55,16 @@ class NetInter:
         return op+self.name+" "*(24-len(self.name))+data
 
     def decodeMsg(self, data):
-        return {data[0:2], data[2:25].replace(" ", ""), data[26:len(data)]}
+        return [data[0:2], data[2:25].replace(" ", ""), data[26:len(data)]]
 
     def receiveMsgs(self):
         msgs = []
         for user in self.users:
             try:
-                msg = self.decodeMsg( user.recv(8192).decode(self.coding) )
-                msg[3] = user[2]    #Save user ID to message for later usage
+                msg = self.decodeMsg( user[0].recv(8192).decode(self.coding) )
+                msg = [msg[0], msg[1], msg[2], user[2]] #Save user ID to message for later usage
                 msgs.append( msg )
-            except (socket.error, TimeoutError):
+            except (socket.error, TimeoutError, socket.timeout):
                 pass
         return msgs
 
@@ -72,17 +73,18 @@ class NetInter:
             self.socket.listen(1)
             try:
                 user = self.socket.accept()
-                user.append(len( self.users ) + 1)  #Save it's ID
+                user = [user[0], user[1]]
+                user.append(len( self.users ))  #Save it's ID
                 user.append( "" )   #Append username
                 self.users.append( user )
-            except TimeoutError:
+            except (TimeoutError, socket.timeout):
                 pass
 
             msgs = self.receiveMsgs()
             for msg in msgs:
                 if msg[0] == "01": #Greeting
-                    self.users[ msg[3] ] = msg[1]
-                    greet = self.greetings[random.randint(0, len(self.greetings))].replace("{username}", msg[1])
+                    self.users[ msg[3] ][3] = msg[1]
+                    greet = self.greetings[random.randint(0, len(self.greetings)-1)].replace("{username}", msg[1])
                     print( "*"+greet )
                     self.broadcast( self.encodeMsg("02", "*"+greet) )
                 elif msg[0] == "02": #Server message
@@ -95,8 +97,8 @@ class NetInter:
 
     def clientTick(self):
         while True:
-            msgs = self.socket.recv( 8192 )
-            for msg in msgs:
+            try:
+                msg = self.decodeMsg( self.socket.recv( 8192 ).decode( self.coding ) )
                 if msg[0] == "01":  # Greeting
                     pass
                 elif msg[0] == "02":  # Server message
@@ -105,12 +107,14 @@ class NetInter:
                     pass
                 elif msg[0] == "04":  # Disconnect
                     pass
+            except (TimeoutError, socket.timeout):
+                pass
 
     def inputTick(self):
         while True:
-            message = input("<"+self.name+">")
+            message = input()
             if message:
-                if hostMode:
-                    self.broadcast( self.encode("02", "<"+self.name+">: "+message ) )
+                if self.hostMode:
+                    self.broadcast( self.encodeMsg("02", "<"+self.name+">: "+message ) )
                 else:
-                    self.broadcast( self.encode("03", message) )
+                    self.sendToServer( self.encodeMsg("03", message) )
