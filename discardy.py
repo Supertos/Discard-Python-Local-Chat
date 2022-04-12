@@ -7,7 +7,7 @@ def startup():
     printer.logo()
     print('\n\n')
     print(f'welcome to Discard v{config.APP_VERSION} !')
-    printer.slogan()
+    printer.random_slogan()
 
 
 def main_msg_loop():
