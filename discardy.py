@@ -1,9 +1,11 @@
 import printer
 import config
+import network_base
 from cmdCommands import commands
 
 def startup():
-    #setup_net()
+    global NET_INTERFACE
+    NET_INTERFACE = network_base.NetInter()
     printer.logo()
     print('\n\n')
     print(f'welcome to Discard v{config.APP_VERSION} !')
@@ -11,6 +13,7 @@ def startup():
 
 
 def main_msg_loop():
+
     cmd = input("<Discard>: ")
     isCommand = False
     for key, command in commands.items():
