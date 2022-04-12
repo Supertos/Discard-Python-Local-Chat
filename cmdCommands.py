@@ -42,7 +42,7 @@ def cmd_host():
     _thread.start_new_thread( NET_INTERFACE.serverTick, () )
     _thread.start_new_thread( NET_INTERFACE.inputTick, () )
     while True:
-        pass
+        time.sleep(0.1)
 
 def cmd_ipv6():
     global IPV6
