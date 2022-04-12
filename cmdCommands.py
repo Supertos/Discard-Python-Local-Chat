@@ -28,15 +28,16 @@ def cmd_host():
     print("============================")
     print("Welcome to server setup wizard!")
     adr = input("*Input hostname (or press enter if unsure): ")
+    port = int( input("*Enter desired port: ") )
     if adr == "":
         if IPV6:
-            adr = socket.getaddrinfo(socket.gethostname(), 8080, socket.AF_INET6)[0][4][0]
+            adr = socket.getaddrinfo(socket.gethostname(), port, socket.AF_INET6)[0][4][0]
         else:
             adr = socket.gethostbyname(socket.gethostname())
     if not IPV6:
-        NET_INTERFACE.makeSocket( adr, int( input("*Enter desired port: ")) )
+        NET_INTERFACE.makeSocket( adr, port )
     else:
-        NET_INTERFACE.makeSocket(adr, 8080)
+        NET_INTERFACE.makeSocket(adr, port)
     NET_INTERFACE.name = input("*Enter desired name: ")
     print("*Now hosting at "+NET_INTERFACE.address+":"+str(NET_INTERFACE.port))
     _thread.start_new_thread( NET_INTERFACE.serverTick, () )
@@ -59,7 +60,7 @@ def cmd_connect():
     print("Welcome to server setup wizard!")
     NET_INTERFACE.ipv6 = IPV6
     if IPV6:
-        NET_INTERFACE.makeSocket(socket.getaddrinfo(socket.gethostname(), 8080, socket.AF_INET6)[0][4][0], 8080)
+        NET_INTERFACE.makeSocket(socket.getaddrinfo(socket.gethostname(), 8080, socket.AF_INET6)[0][4][0], random.randint(1000, 9999) )
     else:
         NET_INTERFACE.makeSocket( socket.gethostbyname(socket.gethostname()), random.randint(1000, 9999) )
     NET_INTERFACE.name = input("*Enter desired name: ")
