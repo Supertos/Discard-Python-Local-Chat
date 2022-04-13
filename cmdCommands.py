@@ -22,14 +22,11 @@ def cmd_quit():
 
 def cmd_host():
     NET_INTERFACE = network_base.NetInter()
-    NET_INTERFACE.ipv6 = config.usingIpv6
     NET_INTERFACE.hostMode = True
     NET_INTERFACE.updateGreetings()
     print("============================")
     print("Welcome to server setup wizard!")
-    #adr = input("*Input socket hostname (press enter if unsure): ")
     port = int( input("*Enter desired port: ") )
-    #if adr == "":
     if config.usingIpv6:
         adr = socket.getaddrinfo(socket.gethostname(), port, socket.AF_INET6)[0][4][0]
     else:
@@ -56,7 +53,6 @@ def cmd_connect():
     NET_INTERFACE = network_base.NetInter()
     print("============================")
     print("Welcome to server setup wizard!")
-    NET_INTERFACE.ipv6 = config.usingIpv6
     if config.usingIpv6:
         NET_INTERFACE.makeSocket(socket.getaddrinfo(socket.gethostname(), 8080, socket.AF_INET6)[0][4][0], random.randint(1000, 9999) )
     else:

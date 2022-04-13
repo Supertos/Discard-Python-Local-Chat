@@ -8,6 +8,7 @@
 
 import socket
 import random
+import config
 socket.setdefaulttimeout(0.1)
 
 """----------------------------------------------
@@ -17,16 +18,21 @@ socket.setdefaulttimeout(0.1)
 
 
 class NetInter:
-    users = []
-    greetings = []
-    coding = "utf-8"
-    name = "Katya"
-    message = ""
-    hostMode = False
+    def __init__(self):
+        self.users = []
+        self.greetings = []
+        self.coding = "utf-8"
+        self.name = None
+        self.message = None
+        self.hostMode = False
+        self.address = None
+        self.port = None
+        self.ipv6 = config.usingIpv6
+        self.socket = None
 
     def makeSocket(self, adr, port):
-        self.address    = adr
-        self.port       = port
+        self.address = adr
+        self.port = port
         if self.ipv6:
             self.socket = socket.socket(socket.AF_INET6)
             self.socket.bind( (adr, port, 0, 0) )
