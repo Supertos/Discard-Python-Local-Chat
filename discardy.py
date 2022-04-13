@@ -1,28 +1,28 @@
 import printer
 import config
-from cmdCommands import commands
+import cmdCommands
 
-def startup():
+
+def network_startup():
     printer.logo()
     print('\n\n')
     print(f'welcome to Discard v{config.APP_VERSION} !')
     printer.random_slogan()
-    commands['help']()
-
-
-def main_msg_loop():
+    cmdCommands.commands['help'].execute()
     while True:
         cmd = input("<Discard>: ")
         isCommand = False
-        for key, command in commands.items():
+        for key, command in cmdCommands.commands.items():
             if cmd == key:
                 isCommand = True
-                command()
+                temp = command.execute()
+                if command.should_finish_startup():
+                    return temp  # if command ens setup temp is equal to netInter object of main network
         if not isCommand:
             # write non-command handler here
             pass
 
 
 if __name__ == '__main__':
-    startup()
-    main_msg_loop()
+    main_network = network_startup()
+    main_network.inputTick()
