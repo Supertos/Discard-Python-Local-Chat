@@ -32,7 +32,7 @@ def cmd_host():
     else:
         adr = socket.gethostbyname(socket.gethostname())
     NET_INTERFACE.makeSocket(adr, port)
-    NET_INTERFACE.name = input("*Enter desired name: ")
+    NET_INTERFACE.choose_name()
     print("*Now hosting at "+NET_INTERFACE.address+":"+str(NET_INTERFACE.port))
     _thread.start_new_thread( NET_INTERFACE.serverTick, () )
     return NET_INTERFACE
@@ -57,7 +57,7 @@ def cmd_connect():
         NET_INTERFACE.makeSocket(socket.getaddrinfo(socket.gethostname(), 8080, socket.AF_INET6)[0][4][0], random.randint(1000, 9999) )
     else:
         NET_INTERFACE.makeSocket( socket.gethostbyname(socket.gethostname()), random.randint(1000, 9999) )
-    NET_INTERFACE.name = input("*Enter desired name: ")
+    NET_INTERFACE.choose_name()
     adr = input("*Enter desired address: ")
     if config.usingIpv6:
         print(adr[0:(len(adr)-5)],adr[(len(adr)-4):len(adr)])

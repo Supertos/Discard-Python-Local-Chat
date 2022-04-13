@@ -21,7 +21,7 @@ class NetInter:
     def __init__(self):
         self.users = []
         self.greetings = []
-        self.coding = "utf-8"
+        self.encoding = "utf-8"
         self.name = None
         self.message = None
         self.hostMode = False
@@ -29,6 +29,15 @@ class NetInter:
         self.port = None
         self.ipv6 = config.usingIpv6
         self.socket = None
+
+    def choose_name(self):
+        while True:
+            name_temp = input("*Enter desired name: ")
+            if len(name_temp) > config.NAME_SIZE_CHARS:
+                print('name is too big')
+            else:
+                self.name = name_temp
+                break
 
     def makeSocket(self, adr, port):
         self.address = adr
@@ -42,15 +51,15 @@ class NetInter:
 
     def broadcast(self, msg):
         for user in self.users:
-            user[0].sendall( bytes( msg, self.coding ))
+            user[0].sendall( bytes( msg, self.encoding ))
 
     def updateGreetings(self):
-        with open("sv_greetings.txt") as file:
-            self.greetings = file.read().split("\n")
-            file.close()
+        file = open("sv_greetings.txt")
+        self.greetings = file.read().split("\n")
+        file.close()
 
     def sendToServer(self, msg):
-        self.socket.sendall( bytes( msg, self.coding ))
+        self.socket.sendall( bytes( msg, self.encoding ))
 
     def connect(self, adr, port):
         try:
@@ -66,17 +75,21 @@ class NetInter:
             print("Unknown error has occurred!")
 
     def encodeMsg(self, op, data):
-        return op+self.name+" "*(24-len(self.name))+data
+        return op + self.name + " " * (config.NAME_SIZE_CHARS - len(self.name)) + data
 
     @staticmethod
     def decodeMsg(data):
-        return [data[0:2], data[2:25].replace(" ", ""), data[26:len(data)]]
+        return [
+            data[0: 2],
+            data[2: config.NAME_SIZE_CHARS + 1].replace(" ", ""),
+            data[config.NAME_SIZE_CHARS + 2: len(data)]
+        ]
 
     def receiveMsgs(self):
         msgs = []
         for user in self.users:
             try:
-                msg = self.decodeMsg( user[0].recv(8192).decode(self.coding) )
+                msg = self.decodeMsg( user[0].recv(8192).decode(self.encoding) )
                 msg = [msg[0], msg[1], msg[2], user[2]]  # Save user ID to message for later usage
                 msgs.append( msg )
             except (socket.error, TimeoutError, socket.timeout):
@@ -113,7 +126,7 @@ class NetInter:
     def clientTick(self):
         while True:
             try:
-                msg = self.decodeMsg( self.socket.recv( 8192 ).decode( self.coding ) )
+                msg = self.decodeMsg( self.socket.recv( 8192 ).decode( self.encoding ) )
                 if msg[0] == "01":  # Greeting
                     pass
                 elif msg[0] == "02":  # Server message
