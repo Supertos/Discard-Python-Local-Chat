@@ -51,7 +51,19 @@ class NetInter:
 
     def broadcast(self, msg):
         for user in self.users:
-            user[0].sendall( bytes( msg, self.encoding ))
+            try:
+                user[0].sendall( bytes( msg, self.encoding ))
+            except ConnectionResetError:
+                self.deleteUser(user[0], user[1])
+                diconnectMsg = "*user " + user[3] + " disconnected"
+                print(diconnectMsg)
+                self.broadcast(self.encodeMsg(diconnectMsg))
+
+    def deleteUser(self, host, port):
+        for i in range(len(self.users)):
+            if self.users[i][0] == host and self.users[i][1] == port:
+                del self.users[i]
+                break
 
     def updateGreetings(self):
         file = open("sv_greetings.txt")
@@ -59,7 +71,11 @@ class NetInter:
         file.close()
 
     def sendToServer(self, msg):
-        self.socket.sendall( bytes( msg, self.encoding ))
+        try:
+            self.socket.sendall( bytes( msg, self.encoding ))
+        except ConnectionResetError:
+            print("server ceased connection")
+            pass  # TODO: disconnect from server and go back to main menu
 
     def connect(self, adr, port):
         try:
@@ -102,7 +118,7 @@ class NetInter:
             try:
                 user = self.socket.accept()
                 user = [user[0], user[1]]
-                user.append(len( self.users ))  # Save it's ID
+                user.append(len( self.users ))  # Save its ID
                 user.append( "" )  # Append username
                 self.users.append( user )
             except (TimeoutError, socket.timeout):
@@ -121,7 +137,7 @@ class NetInter:
                     print( "<"+msg[1]+">: "+msg[2] )
                     self.broadcast( self.encodeMsg("02", "<"+msg[1]+">: "+msg[2]) )
                 elif msg[0] == "04":  # Disconnect
-                    pass  # There should be code to delete user
+                    pass  # TODO: There should be code to delete user
 
     def clientTick(self):
         while True:
