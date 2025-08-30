@@ -1,9 +1,16 @@
+'''This module is the entry point for the application.'''
+
 import printer
 import config
 import cmdCommands
 
 
 def network_startup():
+    '''
+    Lets the user execute commands in a loop until the
+    user runs a command with `command.should_finish_startup()`
+    equal to `True`.
+    '''
     printer.logo()
     print('\n\n')
     print(f'welcome to Discard v{config.APP_VERSION} !')
@@ -17,9 +24,8 @@ def network_startup():
                 isCommand = True
                 temp = command.execute()
                 if command.should_finish_startup():
-                    return temp  # if command ens setup, then temp is equal to netInter object of main network
+                    return temp   # `temp` must be a valid `NetInter`.
         if not isCommand:
-            # write non-command handler here
             pass
 
 
