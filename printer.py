@@ -1,6 +1,8 @@
 '''This module contains functions that print text messages.'''
 
 from random import randint
+
+
 def random_slogan():
     '''Prints a randomly chosen slogan out of a predefined list.'''
     slogans = [

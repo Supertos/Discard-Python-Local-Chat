@@ -20,9 +20,10 @@ socket.setdefaulttimeout(0.1)
 class NetInter:
     '''
     This is a kitchen sink class for the application.
-    
+
     It implements both the server's host and the server's client.
     '''
+
     def __init__(self):
         self.users = []
         self.greetings = []
@@ -58,10 +59,10 @@ class NetInter:
         self.port = port
         if self.ipv6:
             self.socket = socket.socket(socket.AF_INET6)
-            self.socket.bind( (adr, port, 0, 0) )
+            self.socket.bind((adr, port, 0, 0))
         else:
             self.socket = socket.socket()
-            self.socket.bind( (adr, port) )
+            self.socket.bind((adr, port))
 
     def broadcast(self, msg):
         '''
@@ -72,7 +73,7 @@ class NetInter:
         '''
         for user in self.users:
             try:
-                user[0].sendall( bytes( msg, self.encoding ))
+                user[0].sendall(bytes(msg, self.encoding))
             except ConnectionResetError:
                 self.deleteUser(user[0], user[1])
                 diconnectMsg = "*user " + user[3] + " disconnected"
@@ -109,7 +110,7 @@ class NetInter:
         This function is not used in host mode.
         '''
         try:
-            self.socket.sendall( bytes( msg, self.encoding ))
+            self.socket.sendall(bytes(msg, self.encoding))
         except ConnectionResetError:
             print("server ceased connection")
             pass  # TODO: disconnect from server and go back to main menu
@@ -123,11 +124,11 @@ class NetInter:
         '''
         try:
             if not self.ipv6:
-                self.socket.connect( (adr, port) )
-                self.sendToServer( self.encodeMsg("01", "") )
+                self.socket.connect((adr, port))
+                self.sendToServer(self.encodeMsg("01", ""))
             else:
-                self.socket.connect( (adr, port, 0, 0) )
-                self.sendToServer( self.encodeMsg("01", "") )
+                self.socket.connect((adr, port, 0, 0))
+                self.sendToServer(self.encodeMsg("01", ""))
         except (TimeoutError, socket.timeout):
             print("Unable to connect! Check if address and port are valid")
         except socket.error:
@@ -136,7 +137,7 @@ class NetInter:
     def encodeMsg(self, op, data):
         '''
         Encodes the message before sending it.
-        
+
         Encoding consists of the the opcode, the name and
         the data parts. Opcode part specifies the kind of 
         message to be sent and should be exactly two 
@@ -182,9 +183,10 @@ class NetInter:
         msgs = []
         for user in self.users:
             try:
-                msg = self.decodeMsg( user[0].recv(8192).decode(self.encoding) )
-                msg = [msg[0], msg[1], msg[2], user[2]]  # Save user ID to message for later usage
-                msgs.append( msg )
+                msg = self.decodeMsg(user[0].recv(8192).decode(self.encoding))
+                # Save user ID to message for later usage
+                msg = [msg[0], msg[1], msg[2], user[2]]
+                msgs.append(msg)
             except (socket.error, TimeoutError, socket.timeout):
                 pass
         return msgs
@@ -192,7 +194,7 @@ class NetInter:
     def serverTick(self):
         '''
         Host execution loop. This should run on a separate thread.
-        
+
         Despite the naming this funcion never returns.
         '''
         while True:
@@ -200,36 +202,39 @@ class NetInter:
             try:
                 user = self.socket.accept()
                 user = [user[0], user[1]]
-                user.append(len( self.users ))  # Save its ID
-                user.append( "" )  # Append username
-                self.users.append( user )
+                user.append(len(self.users))  # Save its ID
+                user.append("")  # Append username
+                self.users.append(user)
             except (TimeoutError, socket.timeout):
                 pass
 
             msgs = self.receiveMsgs()
             for msg in msgs:
                 if msg[0] == "01":  # Greeting
-                    self.users[ msg[3] ][3] = msg[1]
-                    greet = self.greetings[random.randint(0, len(self.greetings)-1)].replace("{username}", msg[1])
-                    print( "*"+greet )
-                    self.broadcast( self.encodeMsg("02", "*"+greet) )
+                    self.users[msg[3]][3] = msg[1]
+                    greet = self.greetings[random.randint(
+                        0, len(self.greetings)-1)].replace("{username}", msg[1])
+                    print("*"+greet)
+                    self.broadcast(self.encodeMsg("02", "*"+greet))
                 elif msg[0] == "02":  # Server message
                     pass
                 elif msg[0] == "03":  # User message
-                    print( "<"+msg[1]+">: "+msg[2] )
-                    self.broadcast( self.encodeMsg("02", "<"+msg[1]+">: "+msg[2]) )
+                    print("<"+msg[1]+">: "+msg[2])
+                    self.broadcast(self.encodeMsg(
+                        "02", "<"+msg[1]+">: "+msg[2]))
                 elif msg[0] == "04":  # Disconnect
                     pass  # TODO: There should be code to delete user
 
     def clientTick(self):
         '''
         Client execution loop. This should run on a separate thread.
-        
+
         Despite the naming this funcion never returns.
         '''
         while True:
             try:
-                msg = self.decodeMsg( self.socket.recv( 8192 ).decode( self.encoding ) )
+                msg = self.decodeMsg(self.socket.recv(
+                    8192).decode(self.encoding))
                 if msg[0] == "01":  # Greeting
                     pass
                 elif msg[0] == "02":  # Server message
@@ -250,6 +255,7 @@ class NetInter:
             message = input()
             if message:
                 if self.hostMode:
-                    self.broadcast( self.encodeMsg("02", "<"+self.name+">: "+message ) )
+                    self.broadcast(self.encodeMsg(
+                        "02", "<"+self.name+">: "+message))
                 else:
-                    self.sendToServer( self.encodeMsg("03", message) )
+                    self.sendToServer(self.encodeMsg("03", message))
