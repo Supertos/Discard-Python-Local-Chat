@@ -1,3 +1,5 @@
+'''This module contains cli commands.'''
+
 import socket
 import network_base
 import _thread
@@ -6,6 +8,7 @@ import config
 
 
 def cmd_help():
+    '''Prints the list of avalable commands.'''
     print("============================")
     print("help - show this text")
     print("quit - stop discard'ing")
@@ -17,10 +20,12 @@ def cmd_help():
 
 
 def cmd_quit():
+    '''Shuts down the application.'''
     quit(0)
 
 
 def cmd_host():
+    '''Starts the `NetInter` in the host mode.'''
     NET_INTERFACE = network_base.NetInter()
     NET_INTERFACE.hostMode = True
     NET_INTERFACE.updateGreetings()
@@ -39,17 +44,20 @@ def cmd_host():
 
 
 def cmd_ipv6():
+    '''Sets the `config.usingIpv6` to `True`.'''
     config.usingIpv6 = True
     print("Now using IPv6!")
 
 
 def cmd_ipv4():
+    '''Sets the `config.usingIpv6` to `False`.'''
     config.usingIpv6 = False
     print("Now using IPv4!")
 
 
 
 def cmd_connect():
+    '''Starts the `NetInter` in the client mode.'''
     NET_INTERFACE = network_base.NetInter()
     print("============================")
     print("Welcome to server setup wizard!")
@@ -69,14 +77,22 @@ def cmd_connect():
 
 
 class CmdCommand:
+    '''Wrapper for cli commands.'''
     def __init__(self, __execute, __end_startup):
         self.__end_startup = __end_startup
         self.__execute = __execute  # if startup should end after execution
 
     def should_finish_startup(self):
+        '''
+        Returns the value of `self.__end_startup`.
+
+        If this is set to `True` than the associated function
+        for this command must return a valid `NetInter` object.
+        '''
         return self.__end_startup
 
     def execute(self):
+        '''Runs the associated function for the command.'''
         return self.__execute()
 
 

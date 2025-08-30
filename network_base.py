@@ -18,6 +18,11 @@ socket.setdefaulttimeout(0.1)
 
 
 class NetInter:
+    '''
+    This is a kitchen sink class for the application.
+    
+    It implements both the server's host and the server's client.
+    '''
     def __init__(self):
         self.users = []
         self.greetings = []
@@ -31,6 +36,7 @@ class NetInter:
         self.socket = None
 
     def choose_name(self):
+        '''Runs the prompt loop to let user choose their username.'''
         while True:
             name_temp = input("*Enter desired name: ")
             if len(name_temp) > config.NAME_SIZE_CHARS:
@@ -40,6 +46,14 @@ class NetInter:
                 break
 
     def makeSocket(self, adr, port):
+        '''
+        Initializes a socket.
+
+        - If `NetInter` is a host than this socket will be used 
+        to communicate with the clients.
+        - If `NetInter` is a client than this socket will be
+        used to communicate with the host.
+        '''
         self.address = adr
         self.port = port
         if self.ipv6:
@@ -50,6 +64,12 @@ class NetInter:
             self.socket.bind( (adr, port) )
 
     def broadcast(self, msg):
+        '''
+        In host mode this function will send the specified
+        message to all of the currently available clients.
+
+        This function is not used in client mode.
+        '''
         for user in self.users:
             try:
                 user[0].sendall( bytes( msg, self.encoding ))
@@ -60,17 +80,34 @@ class NetInter:
                 self.broadcast(self.encodeMsg(diconnectMsg))
 
     def deleteUser(self, host, port):
+        '''
+        In host mode this function will remove the specified 
+        user from the list of tracked users.
+
+        This function is not used in client mode.
+        '''
         for i in range(len(self.users)):
             if self.users[i][0] == host and self.users[i][1] == port:
                 del self.users[i]
                 break
 
     def updateGreetings(self):
+        '''
+        Parses and splits `sv_greetings.txt` on newlines, writes the 
+        resulting values to `self.greetings`.
+        '''
         file = open("sv_greetings.txt")
         self.greetings = file.read().split("\n")
         file.close()
 
     def sendToServer(self, msg):
+        '''
+        In client mode this function will send the message
+        to the server. Message should be properly encoded
+        with `self.encodeMsg`.
+
+        This function is not used in host mode.
+        '''
         try:
             self.socket.sendall( bytes( msg, self.encoding ))
         except ConnectionResetError:
@@ -78,6 +115,12 @@ class NetInter:
             pass  # TODO: disconnect from server and go back to main menu
 
     def connect(self, adr, port):
+        '''
+        In client mode this function will try to 
+        connect the client to the host.
+
+        This function is not used in host mode.
+        '''
         try:
             if not self.ipv6:
                 self.socket.connect( (adr, port) )
@@ -91,10 +134,37 @@ class NetInter:
             print("Unknown error has occurred!")
 
     def encodeMsg(self, op, data):
+        '''
+        Encodes the message before sending it.
+        
+        Encoding consists of the the opcode, the name and
+        the data parts. Opcode part specifies the kind of 
+        message to be sent and should be exactly two 
+        characters long. Name part specifes the user's 
+        preferred name and shold not exceed 
+        `config.NAME_SIZE_CHARS` characters in length. 
+        Data part contains the message's text.
+
+        Opcodes:
+
+        `01` - client sends this to the host after connecting to it.
+        The host should respond by broadcasting a greeting for this
+        client.
+        `02` - host sends this to the clients after recieving a 
+        message with `03` opcode from one of the clients. Host 
+        should ignore the messages with this opcode.
+        `03` - client sends this to the host whenever they want to 
+        send a message to everyone in the server. Host should respond
+        to this message by broadcasting same message with an `02`
+        opcode. Clients should ignore the messages with this opcode.
+        `04` - Not yet implemented. This message is sent when the user
+        (client or host) is about to disconnect.
+        '''
         return op + self.name + " " * (config.NAME_SIZE_CHARS - len(self.name)) + data
 
     @staticmethod
     def decodeMsg(data):
+        '''Decodes the message after receiving it.'''
         return [
             data[0: 2],
             data[2: config.NAME_SIZE_CHARS + 1].replace(" ", ""),
@@ -102,6 +172,13 @@ class NetInter:
         ]
 
     def receiveMsgs(self):
+        '''
+        In host mode this function will check for new messages from 
+        all of the connected clients and return the list of decoded
+        messages with some additional information.
+
+        This function is not used in client mode.
+        '''
         msgs = []
         for user in self.users:
             try:
@@ -113,6 +190,11 @@ class NetInter:
         return msgs
 
     def serverTick(self):
+        '''
+        Host execution loop. This should run on a separate thread.
+        
+        Despite the naming this funcion never returns.
+        '''
         while True:
             self.socket.listen(1)
             try:
@@ -140,6 +222,11 @@ class NetInter:
                     pass  # TODO: There should be code to delete user
 
     def clientTick(self):
+        '''
+        Client execution loop. This should run on a separate thread.
+        
+        Despite the naming this funcion never returns.
+        '''
         while True:
             try:
                 msg = self.decodeMsg( self.socket.recv( 8192 ).decode( self.encoding ) )
@@ -155,6 +242,10 @@ class NetInter:
                 pass
 
     def inputTick(self):
+        '''
+        Prompts the user to enter a message and 
+        sends it to all other users on the server.
+        '''
         while True:
             message = input()
             if message:

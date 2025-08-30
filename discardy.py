@@ -1,9 +1,16 @@
+'''This module is the entry point for the application.'''
+
 import printer
 import config
 import cmdCommands
 
 
 def network_startup():
+    '''
+    Lets the user execute commands in a loop until the
+    user runs a command with `command.should_finish_startup()`
+    equal to `True`.
+    '''
     printer.logo()
     print('\n\n')
     print(f'welcome to Discard v{config.APP_VERSION} !')
