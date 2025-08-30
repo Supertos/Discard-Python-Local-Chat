@@ -24,9 +24,8 @@ def network_startup():
                 isCommand = True
                 temp = command.execute()
                 if command.should_finish_startup():
-                    return temp  # if command ens setup, then temp is equal to netInter object of main network
+                    return temp   # `temp` must be a valid `NetInter`.
         if not isCommand:
-            # write non-command handler here
             pass
 
 

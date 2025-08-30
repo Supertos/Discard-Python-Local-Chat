@@ -113,7 +113,8 @@ class NetInter:
             self.socket.sendall(bytes(msg, self.encoding))
         except ConnectionResetError:
             print("server ceased connection")
-            pass  # TODO: disconnect from server and go back to main menu
+            raise NotImplementedError(
+                "Disconnecting from the server is not yet implemented")
 
     def connect(self, adr, port):
         '''
@@ -158,8 +159,9 @@ class NetInter:
         send a message to everyone in the server. Host should respond
         to this message by broadcasting same message with an `02`
         opcode. Clients should ignore the messages with this opcode.
-        `04` - Not yet implemented. This message is sent when the user
-        (client or host) is about to disconnect.
+        `04` - Not yet implemented. Client sends this message to the
+        host befor disconnecting from it. Clients should ignore the
+        messages with this opcode.
         '''
         return op + self.name + " " * (config.NAME_SIZE_CHARS - len(self.name)) + data
 
@@ -203,27 +205,29 @@ class NetInter:
                 user = self.socket.accept()
                 user = [user[0], user[1]]
                 user.append(len(self.users))  # Save its ID
-                user.append("")  # Append username
+                user.append("")  # TODO: Append username?
                 self.users.append(user)
             except (TimeoutError, socket.timeout):
                 pass
 
             msgs = self.receiveMsgs()
             for msg in msgs:
-                if msg[0] == "01":  # Greeting
+                # See `NetInter.encodeMsg` for opcode specification.
+                if msg[0] == "01":
                     self.users[msg[3]][3] = msg[1]
                     greet = self.greetings[random.randint(
                         0, len(self.greetings)-1)].replace("{username}", msg[1])
                     print("*"+greet)
                     self.broadcast(self.encodeMsg("02", "*"+greet))
-                elif msg[0] == "02":  # Server message
+                elif msg[0] == "02":
                     pass
-                elif msg[0] == "03":  # User message
+                elif msg[0] == "03":
                     print("<"+msg[1]+">: "+msg[2])
                     self.broadcast(self.encodeMsg(
                         "02", "<"+msg[1]+">: "+msg[2]))
-                elif msg[0] == "04":  # Disconnect
-                    pass  # TODO: There should be code to delete user
+                elif msg[0] == "04":
+                    raise NotImplementedError(
+                        "Opcode `04` is not supported yet.")
 
     def clientTick(self):
         '''
@@ -235,13 +239,14 @@ class NetInter:
             try:
                 msg = self.decodeMsg(self.socket.recv(
                     8192).decode(self.encoding))
-                if msg[0] == "01":  # Greeting
+                # See `NetInter.encodeMsg` for opcode specification.
+                if msg[0] == "01":
                     pass
-                elif msg[0] == "02":  # Server message
+                elif msg[0] == "02":
                     print(msg[2])
-                elif msg[0] == "03":  # User message
+                elif msg[0] == "03":
                     pass
-                elif msg[0] == "04":  # Disconnect
+                elif msg[0] == "04":
                     pass
             except (TimeoutError, socket.timeout):
                 pass
