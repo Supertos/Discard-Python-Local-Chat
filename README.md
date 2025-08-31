@@ -1,4 +1,4 @@
-# Discard-Python-Local-Chat
+# Discard: local chat
 
 This project is a local network chat implemented in python without using 
 external packages (except for build backend).
