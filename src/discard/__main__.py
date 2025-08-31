@@ -2,10 +2,10 @@
 Entry point for discard package.
 
 This module allows executing the package as a module:
-> python -m myapp [arguments]
+> python -m discard [arguments]
 
 Or if installed as a package:
-> myapp [arguments]
+> discard [arguments]
 '''
 
 from .discardy import main
