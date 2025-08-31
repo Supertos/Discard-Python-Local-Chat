@@ -2,8 +2,8 @@
 
 from . import __version__
 from . import printer
-from . import config
-from . import cmdCommands
+from . import globals
+from . import commands
 
 
 def network_startup():
@@ -16,11 +16,11 @@ def network_startup():
     print('\n\n')
     print(f'welcome to Discard v{__version__} !')
     printer.random_slogan()
-    cmdCommands.commands['help'].execute()
+    commands.commands['help'].execute()
     while True:
         cmd = input("<Discard>: ")
         isCommand = False
-        for key, command in cmdCommands.commands.items():
+        for key, command in commands.commands.items():
             if cmd == key:
                 isCommand = True
                 temp = command.execute()

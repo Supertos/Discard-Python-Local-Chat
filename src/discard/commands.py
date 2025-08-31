@@ -3,8 +3,8 @@
 import random
 import _thread
 import socket
-from . import config
-from . import network_base
+from . import globals
+from . import network
 
 
 def cmd_help():
@@ -26,13 +26,13 @@ def cmd_quit():
 
 def cmd_host():
     '''Starts the `NetInter` in the host mode.'''
-    NET_INTERFACE = network_base.NetInter()
+    NET_INTERFACE = network.NetInter()
     NET_INTERFACE.hostMode = True
     NET_INTERFACE.updateGreetings()
     print("============================")
     print("Welcome to server setup wizard!")
     port = int(input("*Enter desired port: "))
-    if config.usingIpv6:
+    if globals.usingIpv6:
         adr = socket.getaddrinfo(socket.gethostname(),
                                  port, socket.AF_INET6)[0][4][0]
     else:
@@ -45,23 +45,23 @@ def cmd_host():
 
 
 def cmd_ipv6():
-    '''Sets the `config.usingIpv6` to `True`.'''
-    config.usingIpv6 = True
+    '''Sets the `globals.usingIpv6` to `True`.'''
+    globals.usingIpv6 = True
     print("Now using IPv6!")
 
 
 def cmd_ipv4():
-    '''Sets the `config.usingIpv6` to `False`.'''
-    config.usingIpv6 = False
+    '''Sets the `globals.usingIpv6` to `False`.'''
+    globals.usingIpv6 = False
     print("Now using IPv4!")
 
 
 def cmd_connect():
     '''Starts the `NetInter` in the client mode.'''
-    NET_INTERFACE = network_base.NetInter()
+    NET_INTERFACE = network.NetInter()
     print("============================")
     print("Welcome to server setup wizard!")
-    if config.usingIpv6:
+    if globals.usingIpv6:
         NET_INTERFACE.makeSocket(socket.getaddrinfo(socket.gethostname(
         ), 8080, socket.AF_INET6)[0][4][0], random.randint(1000, 9999))
     else:
@@ -69,7 +69,7 @@ def cmd_connect():
             socket.gethostname()), random.randint(1000, 9999))
     NET_INTERFACE.choose_name()
     adr = input("*Enter desired address: ")
-    if config.usingIpv6:
+    if globals.usingIpv6:
         print(adr[0:(len(adr)-5)], adr[(len(adr)-4):len(adr)])
         NET_INTERFACE.connect(adr[0:(len(adr)-5)],
                               int(adr[(len(adr)-4):len(adr)]))

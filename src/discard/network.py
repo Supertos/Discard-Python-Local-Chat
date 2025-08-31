@@ -8,7 +8,7 @@
 
 import socket
 import random
-from . import config
+from . import globals
 socket.setdefaulttimeout(0.1)
 
 """----------------------------------------------
@@ -33,14 +33,14 @@ class NetInter:
         self.hostMode = False
         self.address = None
         self.port = None
-        self.ipv6 = config.usingIpv6
+        self.ipv6 = globals.usingIpv6
         self.socket = None
 
     def choose_name(self):
         '''Runs the prompt loop to let user choose their username.'''
         while True:
             name_temp = input("*Enter desired name: ")
-            if len(name_temp) > config.NAME_SIZE_CHARS:
+            if len(name_temp) > globals.NAME_SIZE_CHARS:
                 print('name is too big')
             else:
                 self.name = name_temp
@@ -144,7 +144,7 @@ class NetInter:
         message to be sent and should be exactly two 
         characters long. Name part specifes the user's 
         preferred name and shold not exceed 
-        `config.NAME_SIZE_CHARS` characters in length. 
+        `globals.NAME_SIZE_CHARS` characters in length. 
         Data part contains the message's text.
 
         Opcodes:
@@ -163,15 +163,15 @@ class NetInter:
         host befor disconnecting from it. Clients should ignore the
         messages with this opcode.
         '''
-        return op + self.name + " " * (config.NAME_SIZE_CHARS - len(self.name)) + data
+        return op + self.name + " " * (globals.NAME_SIZE_CHARS - len(self.name)) + data
 
     @staticmethod
     def decodeMsg(data):
         '''Decodes the message after receiving it.'''
         return [
             data[0: 2],
-            data[2: config.NAME_SIZE_CHARS + 1].replace(" ", ""),
-            data[config.NAME_SIZE_CHARS + 2: len(data)]
+            data[2: globals.NAME_SIZE_CHARS + 1].replace(" ", ""),
+            data[globals.NAME_SIZE_CHARS + 2: len(data)]
         ]
 
     def receiveMsgs(self):
