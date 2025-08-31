@@ -26,7 +26,6 @@ class NetInter:
 
     def __init__(self):
         self.users = []
-        self.greetings = []
         self.encoding = "utf-8"
         self.name = None
         self.message = None
@@ -91,15 +90,6 @@ class NetInter:
             if self.users[i][0] == host and self.users[i][1] == port:
                 del self.users[i]
                 break
-
-    def updateGreetings(self):
-        '''
-        Parses and splits `sv_greetings.txt` on newlines, writes the 
-        resulting values to `self.greetings`.
-        '''
-        file = open("sv_greetings.txt")
-        self.greetings = file.read().split("\n")
-        file.close()
 
     def sendToServer(self, msg):
         '''
@@ -215,8 +205,7 @@ class NetInter:
                 # See `NetInter.encodeMsg` for opcode specification.
                 if msg[0] == "01":
                     self.users[msg[3]][3] = msg[1]
-                    greet = self.greetings[random.randint(
-                        0, len(self.greetings)-1)].replace("{username}", msg[1])
+                    greet = random_greeting(msg[1])
                     print("*"+greet)
                     self.broadcast(self.encodeMsg("02", "*"+greet))
                 elif msg[0] == "02":
@@ -264,3 +253,15 @@ class NetInter:
                         "02", "<"+self.name+">: "+message))
                 else:
                     self.sendToServer(self.encodeMsg("03", message))
+
+
+def random_greeting(username: str) -> str:
+    '''Generates a random greeting with the specified username.'''
+    from random import choice
+    greetings = [
+        "{username} has joined the party!",
+        "Say hi to {username}!",
+        "Howdy {username} how it's going?",
+        "{username} is now server's member!",
+    ]
+    return choice(greetings).replace('{username}', username)
