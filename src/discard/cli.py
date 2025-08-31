@@ -6,31 +6,22 @@ from . import globals
 from . import commands
 
 
-def network_startup():
+def command_loop():
     '''
-    Lets the user execute commands in a loop until the
-    user runs a command with `command.should_finish_startup()`
-    equal to `True`.
+    Lets the user execute commands in a loop until one of the
+    commands quits the application.
     '''
     printer.logo()
     print('\n\n')
     print(f'welcome to Discard v{__version__} !')
     printer.random_slogan()
-    commands.commands['help'].execute()
+    commands.commands.try_execute('help')
     while True:
-        cmd = input("<Discard>: ")
-        isCommand = False
-        for key, command in commands.commands.items():
-            if cmd == key:
-                isCommand = True
-                temp = command.execute()
-                if command.should_finish_startup():
-                    return temp   # `temp` must be a valid `NetInter`.
-        if not isCommand:
-            pass
+        name = input('<Discard>: ')
+        if not commands.commands.try_execute(name):
+            print(f'No such command: {name}')
 
 
 def main():
     '''Entry point for the application.'''
-    main_network = network_startup()
-    main_network.inputTick()
+    command_loop()
