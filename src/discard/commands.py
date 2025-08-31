@@ -5,8 +5,66 @@ import _thread
 import socket
 from typing import Callable
 from dataclasses import dataclass
-from . import globals
 from . import network
+
+
+def choose_name() -> str:
+    '''Runs the prompt loop to let user choose their username.'''
+    while True:
+        name = input("*Enter desired name: ")
+        if len(name) > network.NAME_SIZE_CHARS:
+            print('name is too big')
+        else:
+            return name
+
+
+def make_socket(adr: str, port: int) -> socket.socket:
+    '''Constructs and initializes a new socket.'''
+    soc = socket.socket()
+    soc.bind((adr, port))
+    return soc
+
+
+def help():
+    '''Prints help for the user.'''
+    print("============================")
+    commands.list_commands()
+    print("============================")
+
+
+def exit():
+    '''Shuts down the application.'''
+    quit(0)
+
+
+def host():
+    '''Runs the `NetInter` in host mode.'''
+    print("============================")
+    print("Welcome to server setup wizard!")
+    adr = socket.gethostbyname(socket.gethostname())
+    port = int(input("*Enter desired port: "))
+    soc = make_socket(adr, port)
+    name = choose_name()
+    net = network.NetInter(name, soc, True)
+    print(f'*Now hosting at {adr} : {port}')
+    _thread.start_new_thread(net.server_loop, ())
+    net.input_loop()
+
+
+def connect():
+    '''Runs the `NetInter` in the client mode.'''
+    print("============================")
+    print("Welcome to server setup wizard!")
+    adr = socket.gethostbyname(socket.gethostname())
+    port = random.randint(1000, 9999)
+    soc = make_socket(adr, port)
+    name = choose_name()
+    net = network.NetInter(name, soc, False)
+    full_adr = input("*Enter desired address: ").split(":")
+    net.connect(full_adr[0], int(full_adr[1]))
+
+    _thread.start_new_thread(net.client_loop, ())
+    net.input_loop()
 
 
 @dataclass
@@ -52,78 +110,9 @@ class CommandList:
             print(f'{name} - {command.description}.')
 
 
-def help():
-    '''Prints help for the user.'''
-    print("============================")
-    commands.list_commands()
-    print("============================")
-
-
-def exit():
-    '''Shuts down the application.'''
-    quit(0)
-
-
-def host():
-    '''Runs the `NetInter` in host mode.'''
-    NET_INTERFACE = network.NetInter()
-    NET_INTERFACE.hostMode = True
-    NET_INTERFACE.updateGreetings()
-    print("============================")
-    print("Welcome to server setup wizard!")
-    port = int(input("*Enter desired port: "))
-    if globals.usingIpv6:
-        adr = socket.getaddrinfo(socket.gethostname(),
-                                 port, socket.AF_INET6)[0][4][0]
-    else:
-        adr = socket.gethostbyname(socket.gethostname())
-    NET_INTERFACE.makeSocket(adr, port)
-    NET_INTERFACE.choose_name()
-    print("*Now hosting at "+NET_INTERFACE.address+":"+str(NET_INTERFACE.port))
-    _thread.start_new_thread(NET_INTERFACE.serverTick, ())
-    NET_INTERFACE.inputTick()
-
-
-def enable_ipv6():
-    '''Sets the `config.usingIpv6` to `True`.'''
-    globals.usingIpv6 = True
-    print("Now using IPv6!")
-
-
-def disable_ipv6():
-    '''Sets the `config.usingIpv6` to `False`.'''
-    globals.usingIpv6 = False
-    print("Now using IPv4!")
-
-
-def connect():
-    '''Runs the `NetInter` in the client mode.'''
-    NET_INTERFACE = network.NetInter()
-    print("============================")
-    print("Welcome to server setup wizard!")
-    if globals.usingIpv6:
-        NET_INTERFACE.makeSocket(socket.getaddrinfo(socket.gethostname(
-        ), 8080, socket.AF_INET6)[0][4][0], random.randint(1000, 9999))
-    else:
-        NET_INTERFACE.makeSocket(socket.gethostbyname(
-            socket.gethostname()), random.randint(1000, 9999))
-    NET_INTERFACE.choose_name()
-    adr = input("*Enter desired address: ")
-    if globals.usingIpv6:
-        print(adr[0:(len(adr)-5)], adr[(len(adr)-4):len(adr)])
-        NET_INTERFACE.connect(adr[0:(len(adr)-5)],
-                              int(adr[(len(adr)-4):len(adr)]))
-    else:
-        NET_INTERFACE.connect(adr.split(":")[0], int(adr.split(":")[1]))
-    _thread.start_new_thread(NET_INTERFACE.clientTick, ())
-    NET_INTERFACE.inputTick()
-
-
 commands = CommandList()
 
 commands.add("help", Command(help, "explains what different commands do"))
 commands.add("quit", Command(exit, "shuts down this application"))
 commands.add("host", Command(host, "starts your very own server"))
-commands.add("ipv6", Command(enable_ipv6, "sets IPv6 mode"))
-commands.add("ipv4", Command(disable_ipv6, "sets IPv4 mode"))
 commands.add("connect", Command(connect, "connects to the server"))

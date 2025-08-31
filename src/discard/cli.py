@@ -1,7 +1,6 @@
 '''This module contains the entry point for the application.'''
 
 from . import __version__
-from . import globals
 from . import commands
 
 

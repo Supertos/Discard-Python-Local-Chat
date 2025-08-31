@@ -7,14 +7,9 @@
 --------------------------------------------------"""
 
 import socket
-import random
-from . import globals
 socket.setdefaulttimeout(0.1)
 
-"""----------------------------------------------
-    NetInter (Network Interface)
-    Makes code less bloated
-----------------------------------------------"""
+NAME_SIZE_CHARS = 24
 
 
 class NetInter:
@@ -24,44 +19,12 @@ class NetInter:
     It implements both the server's host and the server's client.
     '''
 
-    def __init__(self):
+    def __init__(self, name: str, socket: socket.socket, is_host: bool):
+        self.name = name
+        self.socket = socket
+        self.is_host = is_host
         self.users = []
         self.encoding = "utf-8"
-        self.name = None
-        self.message = None
-        self.hostMode = False
-        self.address = None
-        self.port = None
-        self.ipv6 = globals.usingIpv6
-        self.socket = None
-
-    def choose_name(self):
-        '''Runs the prompt loop to let user choose their username.'''
-        while True:
-            name_temp = input("*Enter desired name: ")
-            if len(name_temp) > globals.NAME_SIZE_CHARS:
-                print('name is too big')
-            else:
-                self.name = name_temp
-                break
-
-    def makeSocket(self, adr, port):
-        '''
-        Initializes a socket.
-
-        - If `NetInter` is a host than this socket will be used 
-        to communicate with the clients.
-        - If `NetInter` is a client than this socket will be
-        used to communicate with the host.
-        '''
-        self.address = adr
-        self.port = port
-        if self.ipv6:
-            self.socket = socket.socket(socket.AF_INET6)
-            self.socket.bind((adr, port, 0, 0))
-        else:
-            self.socket = socket.socket()
-            self.socket.bind((adr, port))
 
     def broadcast(self, msg):
         '''
@@ -74,12 +37,12 @@ class NetInter:
             try:
                 user[0].sendall(bytes(msg, self.encoding))
             except ConnectionResetError:
-                self.deleteUser(user[0], user[1])
+                self.delete_user(user[0], user[1])
                 diconnectMsg = "*user " + user[3] + " disconnected"
                 print(diconnectMsg)
-                self.broadcast(self.encodeMsg(diconnectMsg))
+                self.broadcast(encode_msg(diconnectMsg, self.name))
 
-    def deleteUser(self, host, port):
+    def delete_user(self, host, port):
         '''
         In host mode this function will remove the specified 
         user from the list of tracked users.
@@ -91,7 +54,7 @@ class NetInter:
                 del self.users[i]
                 break
 
-    def sendToServer(self, msg):
+    def send_to_server(self, msg):
         '''
         In client mode this function will send the message
         to the server. Message should be properly encoded
@@ -114,57 +77,14 @@ class NetInter:
         This function is not used in host mode.
         '''
         try:
-            if not self.ipv6:
-                self.socket.connect((adr, port))
-                self.sendToServer(self.encodeMsg("01", ""))
-            else:
-                self.socket.connect((adr, port, 0, 0))
-                self.sendToServer(self.encodeMsg("01", ""))
+            self.socket.connect((adr, port))
+            self.send_to_server(encode_msg("01", "", self.name))
         except (TimeoutError, socket.timeout):
             print("Unable to connect! Check if address and port are valid")
         except socket.error:
             print("Unknown error has occurred!")
 
-    def encodeMsg(self, op, data):
-        '''
-        Encodes the message before sending it.
-
-        Encoding consists of the the opcode, the name and
-        the data parts. Opcode part specifies the kind of 
-        message to be sent and should be exactly two 
-        characters long. Name part specifes the user's 
-        preferred name and shold not exceed 
-        `globals.NAME_SIZE_CHARS` characters in length. 
-        Data part contains the message's text.
-
-        Opcodes:
-
-        `01` - client sends this to the host after connecting to it.
-        The host should respond by broadcasting a greeting for this
-        client.
-        `02` - host sends this to the clients after recieving a 
-        message with `03` opcode from one of the clients. Host 
-        should ignore the messages with this opcode.
-        `03` - client sends this to the host whenever they want to 
-        send a message to everyone in the server. Host should respond
-        to this message by broadcasting same message with an `02`
-        opcode. Clients should ignore the messages with this opcode.
-        `04` - Not yet implemented. Client sends this message to the
-        host befor disconnecting from it. Clients should ignore the
-        messages with this opcode.
-        '''
-        return op + self.name + " " * (globals.NAME_SIZE_CHARS - len(self.name)) + data
-
-    @staticmethod
-    def decodeMsg(data):
-        '''Decodes the message after receiving it.'''
-        return [
-            data[0: 2],
-            data[2: globals.NAME_SIZE_CHARS + 1].replace(" ", ""),
-            data[globals.NAME_SIZE_CHARS + 2: len(data)]
-        ]
-
-    def receiveMsgs(self):
+    def receive_msgs(self):
         '''
         In host mode this function will check for new messages from 
         all of the connected clients and return the list of decoded
@@ -175,7 +95,7 @@ class NetInter:
         msgs = []
         for user in self.users:
             try:
-                msg = self.decodeMsg(user[0].recv(8192).decode(self.encoding))
+                msg = decode_msg(user[0].recv(8192).decode(self.encoding))
                 # Save user ID to message for later usage
                 msg = [msg[0], msg[1], msg[2], user[2]]
                 msgs.append(msg)
@@ -183,11 +103,9 @@ class NetInter:
                 pass
         return msgs
 
-    def serverTick(self):
+    def server_loop(self):
         '''
         Host execution loop. This should run on a separate thread.
-
-        Despite the naming this funcion never returns.
         '''
         while True:
             self.socket.listen(1)
@@ -200,33 +118,31 @@ class NetInter:
             except (TimeoutError, socket.timeout):
                 pass
 
-            msgs = self.receiveMsgs()
+            msgs = self.receive_msgs()
             for msg in msgs:
                 # See `NetInter.encodeMsg` for opcode specification.
                 if msg[0] == "01":
                     self.users[msg[3]][3] = msg[1]
                     greet = random_greeting(msg[1])
                     print("*"+greet)
-                    self.broadcast(self.encodeMsg("02", "*"+greet))
+                    self.broadcast(encode_msg("02", "*"+greet, self.name))
                 elif msg[0] == "02":
                     pass
                 elif msg[0] == "03":
                     print("<"+msg[1]+">: "+msg[2])
-                    self.broadcast(self.encodeMsg(
-                        "02", "<"+msg[1]+">: "+msg[2]))
+                    self.broadcast(encode_msg(
+                        "02", "<"+msg[1]+">: "+msg[2], self.name))
                 elif msg[0] == "04":
                     raise NotImplementedError(
                         "Opcode `04` is not supported yet.")
 
-    def clientTick(self):
+    def client_loop(self):
         '''
         Client execution loop. This should run on a separate thread.
-
-        Despite the naming this funcion never returns.
         '''
         while True:
             try:
-                msg = self.decodeMsg(self.socket.recv(
+                msg = decode_msg(self.socket.recv(
                     8192).decode(self.encoding))
                 # See `NetInter.encodeMsg` for opcode specification.
                 if msg[0] == "01":
@@ -240,19 +156,19 @@ class NetInter:
             except (TimeoutError, socket.timeout):
                 pass
 
-    def inputTick(self):
+    def input_loop(self):
         '''
-        Prompts the user to enter a message and 
-        sends it to all other users on the server.
+        Keeps prompting the user to enter a message and 
+        keeps sending it to all other users on the server.
         '''
         while True:
             message = input()
             if message:
-                if self.hostMode:
-                    self.broadcast(self.encodeMsg(
-                        "02", "<"+self.name+">: "+message))
+                if self.is_host:
+                    self.broadcast(encode_msg(
+                        "02", "<"+self.name+">: "+message, self.name))
                 else:
-                    self.sendToServer(self.encodeMsg("03", message))
+                    self.send_to_server(encode_msg("03", message, self.name))
 
 
 def random_greeting(username: str) -> str:
@@ -265,3 +181,43 @@ def random_greeting(username: str) -> str:
         "{username} is now server's member!",
     ]
     return choice(greetings).replace('{username}', username)
+
+
+def encode_msg(op, data, name):
+    '''
+    Encodes the message before sending it.
+
+    Encoding consists of the the opcode, the name and
+    the data parts. Opcode part specifies the kind of 
+    message to be sent and should be exactly two 
+    characters long. Name part specifes the user's 
+    preferred name and shold not exceed 
+    `NAME_SIZE_CHARS` characters in length. 
+    Data part contains the message's text.
+
+    Opcodes:
+
+    `01` - client sends this to the host after connecting to it.
+    The host should respond by broadcasting a greeting for this
+    client.
+    `02` - host sends this to the clients after recieving a 
+    message with `03` opcode from one of the clients. Host 
+    should ignore the messages with this opcode.
+    `03` - client sends this to the host whenever they want to 
+    send a message to everyone in the server. Host should respond
+    to this message by broadcasting same message with an `02`
+    opcode. Clients should ignore the messages with this opcode.
+    `04` - Not yet implemented. Client sends this message to the
+    host befor disconnecting from it. Clients should ignore the
+    messages with this opcode.
+    '''
+    return op + name + " " * (NAME_SIZE_CHARS - len(name)) + data
+
+
+def decode_msg(data):
+    '''Decodes the message after receiving it.'''
+    return [
+        data[0: 2],
+        data[2: NAME_SIZE_CHARS + 1].replace(" ", ""),
+        data[NAME_SIZE_CHARS + 2: len(data)]
+    ]
