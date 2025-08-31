@@ -18,8 +18,9 @@ python -m discard [arguments]
 
 Or build the package:
 ```bash
+# (.venv)
 pip install setuptools
-python install
+pip install .  
 ```
 And run it like this:
 ```bash
