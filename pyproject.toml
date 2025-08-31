@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=80.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "discard"
+version = "0.3.0"
+requires-python = ">=3.8"
+dependencies = []
+readme = "README.md"
+license = {file = "LICENSE"}
+
+[project.scripts]
+discard = "discard.discardy:main"
+
+[project.urls]
+Repository = "https://github.com/Supertos/Discard-Python-Local-Chat"

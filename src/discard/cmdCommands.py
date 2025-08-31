@@ -1,10 +1,10 @@
 '''This module contains cli commands.'''
 
-import socket
-import network_base
-import _thread
 import random
-import config
+import _thread
+import socket
+from . import config
+from . import network_base
 
 
 def cmd_help():

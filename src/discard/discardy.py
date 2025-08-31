@@ -1,8 +1,9 @@
-'''This module is the entry point for the application.'''
+'''This module contains the entry point for the application.'''
 
-import printer
-import config
-import cmdCommands
+from . import __version__
+from . import printer
+from . import config
+from . import cmdCommands
 
 
 def network_startup():
@@ -13,7 +14,7 @@ def network_startup():
     '''
     printer.logo()
     print('\n\n')
-    print(f'welcome to Discard v{config.APP_VERSION} !')
+    print(f'welcome to Discard v{__version__} !')
     printer.random_slogan()
     cmdCommands.commands['help'].execute()
     while True:
@@ -29,6 +30,7 @@ def network_startup():
             pass
 
 
-if __name__ == '__main__':
+def main():
+    '''Entry point for the application.'''
     main_network = network_startup()
     main_network.inputTick()
