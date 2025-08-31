@@ -6,6 +6,7 @@ external packages (except for build backend).
 ## Wise quote
 
 > This project is dedicated to creating new and independant Russian messanger Discard!!!
+> 
 > — God, before the creation of space and time.
 
 ## How to use
