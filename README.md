@@ -19,7 +19,7 @@ dependencies (except for the build tools, but they are only used by the develope
 Discard is used from the command line. 
 
 ```bash
-# prints versision information
+# prints version information
 discard version
 ```
 
