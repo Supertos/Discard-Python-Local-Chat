@@ -11,7 +11,7 @@ readme = "README.md"
 license = {file = "LICENSE"}
 
 [project.scripts]
-discard = "discard.discardy:main"
+discard = "discard.cli:main"
 
 [project.urls]
 Repository = "https://github.com/Supertos/Discard-Python-Local-Chat"

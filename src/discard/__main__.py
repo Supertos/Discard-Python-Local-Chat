@@ -8,7 +8,7 @@ Or if installed as a package:
 > discard [arguments]
 '''
 
-from .discardy import main
+from .cli import main
 
 if __name__ == '__main__':
     main()
