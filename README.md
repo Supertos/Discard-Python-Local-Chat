@@ -12,7 +12,7 @@ Discard is a command line app that allows you to exchange quirky text messages
 with other Discard users over a local network.
 
 This app is implemented in pure python and does not need any external package
-dependencies (except for build tools, but they are only used by developers).
+dependencies (except for the build tools, but they are only used by the developers).
 
 ## Usage
 
